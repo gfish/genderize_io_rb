@@ -129,11 +129,9 @@ class GenderizeIoRb
 
     unless res
       http_res = @http.get("?name=#{CGI.escape(name_lc)}")
-
-      raise GenderizeIoRb::Errors::LimitReach.new(http_res) if http_res.to_s.include? "limit too low"
-
       json_res = JSON.parse(http_res.body)
 
+      raise GenderizeIoRb::Errors::LimitReach.new(json_res[1]) if json_res.include? "limit too low"
       raise GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{name_lc}'." unless json_res["gender"]
 
       res = ::GenderizeIoRb::Result.new(
