@@ -165,7 +165,7 @@ private
 
   def generate_urls_from_names(names_lc)
     urls = []
-    url = @args[:apikey].present? ? "?apikey=#{@args[:apikey]}" : "?"
+    url = "?"
 
     names_lc.each_with_index do |name, index|
       part = "name[#{index}]=#{CGI.escape(name)}"
@@ -181,6 +181,9 @@ private
     end
 
     urls << url
+
+    p urls
+    urls.map! { |url| url.gsub("?", "?apikey=#{@args[:apikey]}" )} if @args[:apikey].present?
 
     return urls
   end
