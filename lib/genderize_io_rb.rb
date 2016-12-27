@@ -12,17 +12,16 @@ class GenderizeIoRb
     return ::GenderizeIoRb.const_get(name)
   end
 
-  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :api_key, :ssl]
+  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :api_key]
   def initialize(args = {})
     args.each do |key, val|
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
     end
 
-    ssl_args = args[:ssl] == true ? {ssl: true, ssl_skip_verify: true} : {}
-    @http2_args = {host: "api.genderize.io"}.merge(ssl_args)
+    @http2_args = )
     @debug = args[:debug]
     @args = args
-    @http = Http2.new(@http2_args)
+    @http = Http2.new(host: "api.genderize.io", ssl: true, ssl_skip_verify: true)
 
     # Make sure the database-version is up-to-date.
     @cache_db = args[:cache_db]
