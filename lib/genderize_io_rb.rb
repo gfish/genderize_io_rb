@@ -12,14 +12,14 @@ class GenderizeIoRb
     return ::GenderizeIoRb.const_get(name)
   end
 
-  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :apikey, :http2_args]
+  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :api_key, :ssl]
   def initialize(args = {})
     args.each do |key, val|
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
     end
 
-    http2_args = args[:http2_args] || {}
-    @http2_args = {host: "api.genderize.io"}.merge(http2_args)
+    ssl_args = args[:ssl] == true ? {ssl: true, ssl_skip_verify: true} : {}
+    @http2_args = {host: "api.genderize.io"}.merge(ssl_args)
     @debug = args[:debug]
     @args = args
     @http = Http2.new(@http2_args)
@@ -183,7 +183,7 @@ private
     urls << url
 
     p urls
-    urls.map! { |url| url.gsub("?", "?apikey=#{@args[:apikey]}" )} if @args[:apikey].present?
+    urls.map! { |url| url.gsub("?", "?apikey=#{@args[:api_key]}" )} if @args[:api_key].present?
 
     return urls
   end
