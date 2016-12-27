@@ -60,6 +60,15 @@ describe "GenderizeIoRb" do
     end
   end
 
+  it "should raise errors when a server limit reached" do
+    JSON.stub(:parse) { "limit too low" }
+    GenderizeIoRb.new do |gir|
+      expect {
+        gir.info_for_name("kasper")
+      }.to raise_error(GenderizeIoRb::Errors::LimitReached)
+    end
+  end
+
   it "can do a multi-name request to speed it up with partly cache from a database" do
     require "baza"
     require "tmpdir"
