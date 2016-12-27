@@ -12,15 +12,17 @@ class GenderizeIoRb
     return ::GenderizeIoRb.const_get(name)
   end
 
-  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug]
+  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :apikey, :http2]
   def initialize(args = {})
     args.each do |key, val|
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
     end
 
+    http2_args = args[:http2] || {}
+    @http2_args = {host: "api.genderize.io"}.merge(http2_args)
     @debug = args[:debug]
     @args = args
-    @http = Http2.new(host: "api.genderize.io")
+    @http = Http2.new(@http2_args)
 
     # Make sure the database-version is up-to-date.
     @cache_db = args[:cache_db]
@@ -163,7 +165,7 @@ private
 
   def generate_urls_from_names(names_lc)
     urls = []
-    url = "?"
+    url = @args[:apikey].present? ? "?apikey=#{@args[:apikey]}" : "?"
 
     names_lc.each_with_index do |name, index|
       part = "name[#{index}]=#{CGI.escape(name)}"
