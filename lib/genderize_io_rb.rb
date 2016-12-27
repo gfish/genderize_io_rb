@@ -179,9 +179,7 @@ private
     end
 
     urls << url
-
-    p urls
-    urls.map! { |u| u.gsub("?", "?apikey=#{@args[:api_key]}") } if @args[:api_key].present?
+    urls.map! { |u| u.gsub("?name", "?apikey=#{@args[:api_key]}&name") } if @args[:api_key].present?
   end
 
   def cache_key_for_name(name_lc)
