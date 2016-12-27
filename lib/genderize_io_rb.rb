@@ -12,13 +12,13 @@ class GenderizeIoRb
     return ::GenderizeIoRb.const_get(name)
   end
 
-  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :apikey, :http2]
+  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :apikey, :http2_args]
   def initialize(args = {})
     args.each do |key, val|
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
     end
 
-    http2_args = args[:http2] || {}
+    http2_args = args[:http2_args] || {}
     @http2_args = {host: "api.genderize.io"}.merge(http2_args)
     @debug = args[:debug]
     @args = args
