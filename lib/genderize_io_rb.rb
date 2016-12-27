@@ -18,7 +18,6 @@ class GenderizeIoRb
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
     end
 
-    @http2_args = )
     @debug = args[:debug]
     @args = args
     @http = Http2.new(host: "api.genderize.io", ssl: true, ssl_skip_verify: true)
@@ -182,9 +181,7 @@ private
     urls << url
 
     p urls
-    urls.map! { |url| url.gsub("?", "?apikey=#{@args[:api_key]}" )} if @args[:api_key].present?
-
-    return urls
+    urls.map! { |u| u.gsub("?", "?apikey=#{@args[:api_key]}") } if @args[:api_key].present?
   end
 
   def cache_key_for_name(name_lc)
