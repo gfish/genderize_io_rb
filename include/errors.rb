@@ -3,7 +3,7 @@ class GenderizeIoRb::Errors
     attr_accessor :name
   end
 
-  class LimitReach < RuntimeError
+  class LimitReached < RuntimeError
     attr_accessor :name
   end
 end
