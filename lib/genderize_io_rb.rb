@@ -170,18 +170,22 @@ private
   def generate_urls_from_names(names_lc)
     urls = []
     url = "?"
+    part_count = 0
 
     names_lc.each_with_index do |name, index|
-      part = "name[#{index}]=#{CGI.escape(name)}"
+      part = "name[#{part_count}]=#{CGI.escape(name)}"
 
       new_length = part.length + url.length
-      if new_length >= 7000
+      if new_length >= 7000 || part_count == 10
+        part_count = 0
         urls << url
         url = "?"
+        part = "name[#{part_count}]=#{CGI.escape(name)}"        
       end
 
       part.prepend("&") unless url == "?"
       url << part
+      part_count += 1
     end
 
     urls << url
