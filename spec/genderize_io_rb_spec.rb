@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "http2"
 
 describe "GenderizeIoRb" do
   it "can detect various names" do
@@ -117,6 +118,15 @@ describe "GenderizeIoRb" do
       end
 
       count.should eq names.length
+    end
+  end
+
+  it "should raise errors when json result include error" do
+    Http2.stub(:get) { '{"error": "Some error from json"}' }
+    GenderizeIoRb.new do |gir|
+      expect {
+        gir.info_for_name("kasper")
+      }.to raise_error(GenderizeIoRb::Errors::ResultError)
     end
   end
 end
