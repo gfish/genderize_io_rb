@@ -71,14 +71,12 @@ class GenderizeIoRb
         json_results = JSON.parse(http_result.body)
 
         json_results.each do |json_result|
-          if json_result["gender"] == nil
-            if json_result["error"]
-              error = GenderizeIoRb::Errors::ResultError.new("HTTP Result include error: '#{json_result["error"]}'.")
-              error.name = json_result["error"]
-            else
-              error = GenderizeIoRb::Errors::NameNotFound.new("Name was not found on Genderize.io: '#{json_result["name"]}'.")
-              error.name = json_result["name"]
-            end
+          if json_result[0] == 'error'
+            error = GenderizeIoRb::Errors::ResultError.new("HTTP Result include error: '#{json_result[1]}'.")
+            error.name = json_result[0]
+          elsif json_result["gender"] == nil
+            error = GenderizeIoRb::Errors::NameNotFound.new("Name was not found on Genderize.io: '#{json_result["name"]}'.")
+            error.name = json_result["name"]
 
             handle_result(error, results, blk)
           else
