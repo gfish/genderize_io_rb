@@ -128,18 +128,18 @@ class GenderizeIoRb
     end
 
     unless res
-      http_res = @http.get("?name=#{CGI.escape(name_lc)}")
-      json_res = JSON.parse(http_res.body)
+      http_result = @http.get("?name=#{CGI.escape(name_lc)}")
+      json_result = JSON.parse(http_result.body)
 
       raise GenderizeIoRb::Errors::LimitReached, json_res[1] if json_res.include? "limit too low"
-      raise GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{name_lc}'." unless json_res["gender"]
+      raise GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{name_lc}'." unless json_result["gender"]
 
       res = ::GenderizeIoRb::Result.new(
-        data: json_res,
+        data: json_result,
         genderize_io_rb: self,
         from_http_request: true
       )
-      store_cache_for_name(name_lc, json_res)
+      store_cache_for_name(name_lc, json_result)
     end
 
     return res
