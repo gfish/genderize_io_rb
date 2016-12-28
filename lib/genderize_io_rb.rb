@@ -71,11 +71,14 @@ class GenderizeIoRb
         json_results = JSON.parse(http_result.body)
 
         json_results.each do |json_result|
-          raise GenderizeIoRb::Errors::LimitReached, json_result[1] if json_result.include? "limit too low"
-
           if json_result["gender"] == nil
-            error = GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{json_result["name"]}'."
-            error.name = json_result["name"]
+            if json_result["error"]
+              error = GenderizeIoRb::Errors::ResultError.new("HTTP Result include error: '#{json_result["error"]}'.")
+              error.name = json_result["error"]
+            else
+              error = GenderizeIoRb::Errors::NameNotFound.new("Name was not found on Genderize.io: '#{json_result["name"]}'.")
+              error.name = json_result["name"]
+            end
 
             handle_result(error, results, blk)
           else
@@ -131,7 +134,7 @@ class GenderizeIoRb
       http_result = @http.get("?name=#{CGI.escape(name_lc)}")
       json_result = JSON.parse(http_result.body)
 
-      raise GenderizeIoRb::Errors::LimitReached, json_res[1] if json_res.include? "limit too low"
+      raise GenderizeIoRb::Errors::ResultError, "HTTP Result include error: '#{json_result["error"]}'." if json_result["error"]
       raise GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{name_lc}'." unless json_result["gender"]
 
       res = ::GenderizeIoRb::Result.new(
