@@ -190,6 +190,8 @@ private
 
     urls << url
     urls.map! { |u| u.gsub("?name", "?apikey=#{@args[:api_key]}&name") } unless @args[:api_key].nil?
+
+    urls
   end
 
   def cache_key_for_name(name_lc)
