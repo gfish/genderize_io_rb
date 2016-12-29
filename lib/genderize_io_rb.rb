@@ -155,6 +155,15 @@ class GenderizeIoRb
     return @destroyed
   end
 
+  def gender_in_dict(name)
+    gender = load_dict[name.strip.capitalize]
+    gender if ['male', 'female'].include? gender
+  end
+
+  def load_dict
+    @names_json ||= File.open("#{File.dirname(__FILE__)}/names_dict.json", "r") { |f| JSON.parse f.read };
+  end
+
 private
 
   def handle_result(result, results, blk)
