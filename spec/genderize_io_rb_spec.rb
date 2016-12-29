@@ -157,12 +157,22 @@ describe "GenderizeIoRb" do
   end
 
   describe "#gender_in_dict" do
-    it "should load gender dictionary as JSON" do
+    it "should format name and get gender from json" do
       gir = GenderizeIoRb.new
       gir.gender_in_dict('kasper').should eq 'male'
       gir.gender_in_dict('Kasper  ').should eq 'male'
       gir.gender_in_dict('balabala  ').should eq nil
       gir.gender_in_dict('facebook').should eq nil
+    end
+  end
+
+  describe "#dict_key?" do
+    it "should check if formated key is exist in json" do
+      gir = GenderizeIoRb.new
+      gir.dict_key?('kasper').should be_true
+      gir.dict_key?('Kasper  ').should be_true
+      gir.dict_key?('balabala  ').should be_false
+      gir.dict_key?('facebook').should be_true
     end
   end
 end

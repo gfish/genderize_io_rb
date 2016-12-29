@@ -158,8 +158,12 @@ class GenderizeIoRb
   end
 
   def gender_in_dict(name)
-    gender = load_dict[name.strip.capitalize]
+    gender = load_dict[name.to_s.strip.capitalize]
     gender if ['male', 'female'].include? gender
+  end
+
+  def dict_key?(key)
+    load_dict.key?(key.to_s.strip.capitalize)
   end
 
   def load_dict
