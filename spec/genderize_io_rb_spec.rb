@@ -110,7 +110,6 @@ describe "GenderizeIoRb" do
       results = gir.info_for_names(names)
       results.length.should eq names.length
 
-
       # Check yielding works so it is possible to save memory.
       count = 0
       gir.info_for_names(names) do |result|
@@ -121,12 +120,49 @@ describe "GenderizeIoRb" do
     end
   end
 
+  it "should add apikey when argument has api_key" do
+    names = JSON.parse(File.read("#{File.dirname(__FILE__)}/shitload_of_names.json"))
+    names = names.map{ |name| name.slice(1, name.length) }.first(25).unshift
+
+    GenderizeIoRb.new(api_key: 1234) do |gir|
+      gir.__send__(:generate_urls_from_names, names).each do |url|
+        url.should include("?apikey=1234&")
+      end
+    end
+
+    GenderizeIoRb.new do |gir|
+      gir.__send__(:generate_urls_from_names, names).each do |url|
+        url.should include("?name[0]=")
+      end
+    end
+  end
+
   it "should raise errors when json result include error" do
     Http2.stub(:get) { '{"error": "Some error from json"}' }
     GenderizeIoRb.new do |gir|
       expect {
         gir.info_for_name("kasper")
       }.to raise_error(GenderizeIoRb::Errors::ResultError)
+    end
+  end
+
+  describe "#load_dict" do
+    it "should load gender dictionary as JSON" do
+      gir = GenderizeIoRb.new
+      names_json = gir.load_dict
+      names_json.class.should eq Hash
+      names_json.length.should > 7000
+      names_json.key?('Facebook').should be_true
+    end
+  end
+
+  describe "#gender_in_dict" do
+    it "should load gender dictionary as JSON" do
+      gir = GenderizeIoRb.new
+      gir.gender_in_dict('kasper').should eq 'male'
+      gir.gender_in_dict('Kasper  ').should eq 'male'
+      gir.gender_in_dict('balabala  ').should eq nil
+      gir.gender_in_dict('facebook').should eq nil
     end
   end
 end
