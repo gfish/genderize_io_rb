@@ -20,7 +20,7 @@ class GenderizeIoRb
 
     @debug = args[:debug]
     @args = args
-    @http = Http2.new(host: "api.genderize.io", ssl: true)
+    @http = Http2.new(host: "api.genderize.io", ssl: true, ssl_skip_verify: true)
 
     # Make sure the database-version is up-to-date.
     @cache_db = args[:cache_db]
