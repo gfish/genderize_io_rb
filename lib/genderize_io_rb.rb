@@ -74,6 +74,8 @@ class GenderizeIoRb
           if json_result[0] == 'error'
             error = GenderizeIoRb::Errors::ResultError.new("HTTP Result include error: '#{json_result[1]}'.")
             error.name = json_result[0]
+
+            handle_result(error, results, blk)
           elsif json_result["gender"] == nil
             error = GenderizeIoRb::Errors::NameNotFound.new("Name was not found on Genderize.io: '#{json_result["name"]}'.")
             error.name = json_result["name"]
