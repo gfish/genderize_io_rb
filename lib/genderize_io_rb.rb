@@ -12,7 +12,7 @@ class GenderizeIoRb
     return ::GenderizeIoRb.const_get(name)
   end
 
-  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug]
+  INITIALIZE_VALID_ARGS = [:cache_as, :cache_db, :debug, :api_key]
   def initialize(args = {})
     args.each do |key, val|
       raise "Invalid key: '#{key}'." unless INITIALIZE_VALID_ARGS.include?(key)
@@ -20,7 +20,7 @@ class GenderizeIoRb
 
     @debug = args[:debug]
     @args = args
-    @http = Http2.new(host: "api.genderize.io")
+    @http = Http2.new(host: "api.genderize.io", ssl: true, ssl_skip_verify: true)
 
     # Make sure the database-version is up-to-date.
     @cache_db = args[:cache_db]
@@ -71,7 +71,12 @@ class GenderizeIoRb
         json_results = JSON.parse(http_result.body)
 
         json_results.each do |json_result|
-          if json_result["gender"] == nil
+          if json_result[0] == 'error'
+            error = GenderizeIoRb::Errors::ResultError.new("HTTP Result include error: '#{json_result[1]}'.")
+            error.name = json_result[0]
+
+            handle_result(error, results, blk)
+          elsif json_result["gender"] == nil
             error = GenderizeIoRb::Errors::NameNotFound.new("Name was not found on Genderize.io: '#{json_result["name"]}'.")
             error.name = json_result["name"]
 
@@ -129,6 +134,7 @@ class GenderizeIoRb
       http_res = @http.get("?name=#{CGI.escape(name_lc)}")
       json_res = JSON.parse(http_res.body)
 
+      raise GenderizeIoRb::Errors::ResultError, "HTTP Result include error: '#{json_res["error"]}'." if json_res["error"]
       raise GenderizeIoRb::Errors::NameNotFound, "Name was not found on Genderize.io: '#{name_lc}'." unless json_res["gender"]
 
       res = ::GenderizeIoRb::Result.new(
@@ -151,6 +157,19 @@ class GenderizeIoRb
     return @destroyed
   end
 
+  def gender_in_dict(name)
+    gender = load_dict[name.to_s.strip.capitalize]
+    gender if ['male', 'female'].include? gender
+  end
+
+  def dict_key?(key)
+    load_dict.key?(key.to_s.strip.capitalize)
+  end
+
+  def load_dict
+    @names_json ||= File.open("#{File.dirname(__FILE__)}/names_dict.json", "r") { |f| JSON.parse f.read };
+  end
+
 private
 
   def handle_result(result, results, blk)
@@ -164,23 +183,28 @@ private
   def generate_urls_from_names(names_lc)
     urls = []
     url = "?"
+    part_count = 0
 
     names_lc.each_with_index do |name, index|
-      part = "name[#{index}]=#{CGI.escape(name)}"
+      part = "name[#{part_count}]=#{CGI.escape(name)}"
 
       new_length = part.length + url.length
-      if new_length >= 7000
+      if new_length >= 7000 || part_count == 10
+        part_count = 0
         urls << url
         url = "?"
+        part = "name[#{part_count}]=#{CGI.escape(name)}"        
       end
 
       part.prepend("&") unless url == "?"
       url << part
+      part_count += 1
     end
 
     urls << url
+    urls.map! { |u| u.gsub("?name", "?apikey=#{@args[:api_key]}&name") } unless @args[:api_key].nil?
 
-    return urls
+    urls
   end
 
   def cache_key_for_name(name_lc)
